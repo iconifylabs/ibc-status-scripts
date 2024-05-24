@@ -42,6 +42,9 @@ ICON_IBC=cx27d5d8af883b7f0a69377e4cb05648adff6f695b
 ICON_PORT_ID=xcall
 WASM_PORT_ID=xcall
 ICON_NODE=https://lisbon.net.solidwallet.io/api/v3/
+ICON_CPT=$PWD/.iconSn
+WASM_CPT=$PWD/.wasmSn
+
 
 
 if [ "$CHAIN" == "archway" ]; then
@@ -104,26 +107,42 @@ function getPacketReceiptIcon() {
 }
 
 function getAllPacketCommitmentsWasm() {
-	local n=$1
-	for (( c=1; c<$n; c++ ))
-	do 
-	   getPacketReceiptWasm $c
-	done
+    local n=$1
+
+    local c=$(cat $ICON_CPT)
+    echo Checkpointed upto $c
+    s=$(($c-5))
+    if [ $s -lt 1 ]; then
+        s=1
+    fi
+
+    for (( c=s; c<$n; c++ ))
+    do 
+       getPacketReceiptWasm $c
+    done
 }
 
 function getAllPacketCommitmentsIcon() {
-	local n=$1
-	for (( c=1; c<$n; c++ ))
-	do 
-	   getPacketReceiptIcon $c
-	done
+    local n=$1
+    local c=$(cat $WASM_CPT)
+    echo Checkpointed upto $c
+    s=$(($c-5))
+    if [ $s -lt 1 ]; then
+        s=1
+    fi
+    for (( c=s; c<$n; c++ ))
+    do 
+       getPacketReceiptIcon $c
+    done
 }
 
 echo "Next sn of packet send icon: $isn"
 echo "Check if packets were received on archway"
 getAllPacketCommitmentsWasm $isn
+echo $isn > $ICON_CPT
 echo 
 echo
 echo "Next sn of packet send wasm: $wsn"
 echo "Check if packets were received on lisbon"
 getAllPacketCommitmentsIcon $wsn
+echo $wsn > $WASM_CPT
